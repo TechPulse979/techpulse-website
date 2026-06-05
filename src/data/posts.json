@@ -1,0 +1,54 @@
+[
+  {
+    "id": "1",
+    "title": "Mastering Next.js 14 App Router: A Comprehensive Guide",
+    "slug": "mastering-nextjs-14",
+    "excerpt": "Learn how to build modern, high-performance web applications with the latest features of Next.js 14.",
+    "content": "Next.js 14 introduced several groundbreaking features that change how we think about web development. From Server Actions to the improved App Router, the framework continues to lead the way in the React ecosystem...",
+    "image": "https://images.unsplash.com/photo-1618477388954-7852f32655ec?q=80&w=1000&auto=format&fit=crop",
+    "category": "Programming",
+    "author": {
+      "name": "Alex Rivera",
+      "role": "Senior Tech Writer",
+      "avatar": "https://i.pravatar.cc/150?u=alex",
+      "bio": "Passionate about simplifying complex tech concepts for everyone."
+    },
+    "date": "March 10, 2026",
+    "readTime": "8 min read",
+    "featured": true
+  },
+  {
+    "id": "2",
+    "title": "The Future of AI in Software Development",
+    "slug": "future-of-ai",
+    "excerpt": "How artificial intelligence is reshaping the way we write code and build software products.",
+    "content": "Artificial Intelligence is no longer a futuristic concept. Today, it's integrated into our IDEs, our CI/CD pipelines, and even our architecture decisions...",
+    "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1000&auto=format&fit=crop",
+    "category": "AI",
+    "author": {
+      "name": "Sarah Chen",
+      "role": "UI/UX Designer",
+      "avatar": "https://i.pravatar.cc/150?u=sarah",
+      "bio": "Exploring the intersection of design and technology."
+    },
+    "date": "March 8, 2026",
+    "readTime": "5 min read"
+  },
+  {
+    "id": "3",
+    "title": "Cloud Native Strategies for 2026",
+    "slug": "cloud-native-strategies",
+    "excerpt": "Stay ahead of the curve with these essential cloud-native architectural patterns.",
+    "content": "As we move further into 2026, the cloud-native landscape continues to evolve. Microservices are being augmented by serverless patterns...",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop",
+    "category": "Cloud",
+    "author": {
+      "name": "Alex Rivera",
+      "role": "Senior Tech Writer",
+      "avatar": "https://i.pravatar.cc/150?u=alex",
+      "bio": "Passionate about simplifying complex tech concepts for everyone."
+    },
+    "date": "March 5, 2026",
+    "readTime": "6 min read"
+  }
+]

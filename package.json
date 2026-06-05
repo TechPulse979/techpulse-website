@@ -21,7 +21,6 @@
     "next-auth": "^4.24.14",
     "react": "latest",
     "react-dom": "latest",
-    "react-quill": "^2.0.0",
     "react-quill-new": "^3.8.3",
     "tailwind-merge": "^2.2.1"
   },

@@ -133,7 +133,11 @@ export default function MessagesPage() {
               </div>
 
               <div className="flex items-center gap-3 pt-6 border-t border-border">
-                <a href={`mailto:${msg.email}`} className="flex items-center gap-2 px-6 py-3 bg-dark dark:bg-white text-white dark:text-dark rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all">
+                <a
+                  href={`mailto:${msg.email}?subject=${encodeURIComponent(`Re: ${msg.subject}`)}&body=${encodeURIComponent(`Hi ${msg.name},\n\n\n\n———\nIn reply to your message:\n"${msg.message}"`)}`}
+                  onClick={() => !msg.read && handleMarkRead(msg._id)}
+                  className="flex items-center gap-2 px-6 py-3 bg-dark dark:bg-white text-white dark:text-dark rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all"
+                >
                   <Reply size={14} /> Reply
                 </a>
                 {!msg.read && (

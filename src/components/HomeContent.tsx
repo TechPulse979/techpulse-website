@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import FeaturedSection from "@/components/FeaturedSection";
 import BlogCard from "@/components/BlogCard";
 import CategoryPills from "@/components/CategoryPills";
-import Newsletter from "@/components/Newsletter";
 import { Post, categories } from "@/data/blog";
 import { Layers, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -102,8 +101,6 @@ export default function HomeContent() {
             </div>
           )}
         </section>
-
-            <Newsletter />
           </>
         )}
       </main>

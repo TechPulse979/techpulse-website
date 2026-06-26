@@ -24,6 +24,18 @@ export async function POST(request: Request) {
     await connectDB();
     const data = await request.json();
     
+    // Validate custom JSON-LD if provided
+    if (data.seo?.customJsonLd) {
+      try {
+        JSON.parse(data.seo.customJsonLd);
+      } catch {
+        return NextResponse.json(
+          { error: 'Invalid Custom JSON-LD: must be valid JSON' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Add default author info if not provided
     const postData = {
       ...data,

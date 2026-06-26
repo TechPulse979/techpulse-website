@@ -28,6 +28,18 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     await connectDB();
     const { id } = await params;
     const data = await request.json();
+
+    // Validate custom JSON-LD if provided
+    if (data.seo?.customJsonLd) {
+      try {
+        JSON.parse(data.seo.customJsonLd);
+      } catch {
+        return NextResponse.json(
+          { error: 'Invalid Custom JSON-LD: must be valid JSON' },
+          { status: 400 }
+        );
+      }
+    }
     
     const updatedPost = await Post.findByIdAndUpdate(id, data, { new: true });
     

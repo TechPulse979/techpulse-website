@@ -7,6 +7,7 @@ import { PenTool, FileText, Send, Image as ImageIcon, Tag, Loader2, AlertCircle,
 import { motion } from 'framer-motion';
 import { useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from 'next/navigation';
+import SeoPanel, { SeoData, defaultSeoData } from '@/components/SeoPanel';
 
 // Dynamic import for ReactQuill to avoid SSR errors.
 // Typed as `any` because next/dynamic's wrapper doesn't expose the forwarded `ref` prop in its types.
@@ -39,6 +40,8 @@ function WriteBlogContent() {
     category: 'Programming'
   });
 
+  const [seoData, setSeoData] = useState<SeoData>(defaultSeoData);
+
   useEffect(() => {
     setMounted(true);
     if (editId) {
@@ -60,6 +63,15 @@ function WriteBlogContent() {
           image: data.image,
           category: data.category
         });
+        if (data.seo) {
+          setSeoData({
+            ...defaultSeoData,
+            ...data.seo,
+            articleSchema: { ...defaultSeoData.articleSchema, ...data.seo.articleSchema },
+            faqSchema: { ...defaultSeoData.faqSchema, ...data.seo.faqSchema },
+            breadcrumbSchema: { ...defaultSeoData.breadcrumbSchema, ...data.seo.breadcrumbSchema },
+          });
+        }
       }
     } catch (err) {
       console.error("Failed to fetch post", err);
@@ -179,6 +191,7 @@ function WriteBlogContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          seo: seoData,
           readTime: `${Math.ceil(formData.content.split(' ').length / 200)} min read`, 
           author: {
             name: session?.user?.name || "Admin",
@@ -199,6 +212,7 @@ function WriteBlogContent() {
             image: '',
             category: 'Programming'
           });
+          setSeoData(defaultSeoData);
         } else {
           setTimeout(() => router.push('/admin/manage'), 2000);
         }
@@ -359,6 +373,16 @@ function WriteBlogContent() {
               />
             </div>
           </div>
+
+          {/* ── SEO Management Panel ──────────────────────────── */}
+          <SeoPanel
+            seo={seoData}
+            onChange={setSeoData}
+            postTitle={formData.title}
+            postExcerpt={formData.excerpt}
+            postImage={formData.image}
+            postCategory={formData.category}
+          />
 
           <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-6">
              {success && (

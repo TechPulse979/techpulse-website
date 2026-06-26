@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
-import { Clock, Calendar, User, ArrowLeft, Share2 } from "lucide-react";
+import { Clock, ArrowLeft, Share2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import connectDB from "@/lib/mongodb";
 import Post from "@/models/Post";
@@ -218,12 +218,45 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
       <Navbar />
       <main className="bg-white dark:bg-dark min-h-screen pt-32 pb-20">
         <article className="max-w-4xl mx-auto px-6">
-          <Link 
-            href="/blog" 
-            className="inline-flex items-center gap-2 text-secondary font-black uppercase text-[10px] tracking-widest mb-8 hover:text-primary transition-colors"
-          >
-            <ArrowLeft size={16} /> Back to Insights
-          </Link>
+
+          {/* ── Visible Breadcrumb Navigation ───────────────── */}
+          <nav aria-label="Breadcrumb" className="mb-8">
+            {seo.breadcrumbSchema?.enabled ? (
+              <ol className="flex flex-wrap items-center gap-1 text-[11px] font-bold uppercase tracking-widest">
+                <li>
+                  <Link href="/" className="text-secondary hover:text-primary transition-colors">
+                    Home
+                  </Link>
+                </li>
+                <li className="text-border"><ChevronRight size={12} /></li>
+                <li>
+                  <Link href="/blog" className="text-secondary hover:text-primary transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li className="text-border"><ChevronRight size={12} /></li>
+                <li>
+                  <Link
+                    href={`/blog?category=${encodeURIComponent(post.category)}`}
+                    className="text-primary hover:underline transition-colors"
+                  >
+                    {post.category}
+                  </Link>
+                </li>
+                <li className="text-border"><ChevronRight size={12} /></li>
+                <li className="text-primary max-w-[260px] truncate" title={post.title}>
+                  {post.title}
+                </li>
+              </ol>
+            ) : (
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 text-secondary font-black uppercase text-[10px] tracking-widest hover:text-primary transition-colors"
+              >
+                <ArrowLeft size={16} /> Back to Insights
+              </Link>
+            )}
+          </nav>
 
           <header className="mb-12">
             <div className="flex items-center gap-4 mb-6">

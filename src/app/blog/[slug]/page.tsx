@@ -20,7 +20,7 @@ async function getPost(slug: string) {
 
 // ─── Dynamic Metadata (SEO) ───────────────────────────────────────────────
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://techpulse.dev";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.mindrovia.com";
 
 export async function generateMetadata({
   params,

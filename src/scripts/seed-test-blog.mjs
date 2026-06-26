@@ -168,7 +168,7 @@ function CommentForm() {
     metaDescription:
       'Learn everything about React 19 — the new compiler, stable Server Components, Actions API, useOptimistic, and the use() hook. A practical guide with code examples.',
     slug:         '',   // use default post slug
-    canonicalUrl: 'https://techpulse.dev/blog/react-19-complete-guide-new-features-best-practices',
+    canonicalUrl: 'https://www.mindrovia.com/blog/react-19-complete-guide-new-features-best-practices',
 
     // ── Open Graph ────────────────────────────────────────────────────
     ogTitle:       'React 19 Complete Guide — New Features & Best Practices',

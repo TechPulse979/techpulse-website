@@ -42,12 +42,18 @@ function WriteBlogContent() {
 
   const [seoData, setSeoData] = useState<SeoData>(defaultSeoData);
 
+  // Effect 1: mark component as mounted (client-side hydration)
   useEffect(() => {
     setMounted(true);
-    if (editId) {
+  }, []);
+
+  // Effect 2: fetch post data when editId is available AND component is mounted
+  useEffect(() => {
+    if (mounted && editId) {
       fetchPost();
     }
-  }, [editId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, editId]);
 
   const fetchPost = async () => {
     setFetching(true);
@@ -56,25 +62,26 @@ function WriteBlogContent() {
       if (res.ok) {
         const data = await res.json();
         setFormData({
-          title: data.title,
-          slug: data.slug,
-          excerpt: data.excerpt,
-          content: data.content,
-          image: data.image,
-          category: data.category
+          title: data.title || '',
+          slug: data.slug || '',
+          excerpt: data.excerpt || '',
+          content: data.content || '',
+          image: data.image || '',
+          category: data.category || 'Programming'
         });
-        if (data.seo) {
-          setSeoData({
-            ...defaultSeoData,
-            ...data.seo,
-            articleSchema: { ...defaultSeoData.articleSchema, ...data.seo.articleSchema },
-            faqSchema: { ...defaultSeoData.faqSchema, ...data.seo.faqSchema },
-            breadcrumbSchema: { ...defaultSeoData.breadcrumbSchema, ...data.seo.breadcrumbSchema },
-          });
-        }
+        setSeoData({
+          ...defaultSeoData,
+          ...(data.seo || {}),
+          articleSchema: { ...defaultSeoData.articleSchema, ...(data.seo?.articleSchema || {}) },
+          faqSchema: { ...defaultSeoData.faqSchema, ...(data.seo?.faqSchema || {}) },
+          breadcrumbSchema: { ...defaultSeoData.breadcrumbSchema, ...(data.seo?.breadcrumbSchema || {}) },
+        });
+      } else {
+        setError("Failed to load post. Please try again.");
       }
     } catch (err) {
       console.error("Failed to fetch post", err);
+      setError("Network error — could not load post data.");
     } finally {
       setFetching(false);
     }
@@ -153,7 +160,7 @@ function WriteBlogContent() {
 
       const result = await res.json();
       if (res.ok) {
-        setFormData({ ...formData, image: result.url });
+        setFormData(prev => ({ ...prev, image: result.url }));
       } else {
         setError(result.error || "Upload failed");
       }
@@ -229,14 +236,27 @@ function WriteBlogContent() {
 
   const handleTitleChange = (title: string) => {
     if (editId) {
-       setFormData({ ...formData, title });
+       setFormData(prev => ({ ...prev, title }));
        return;
     }
     const slug = title.toLowerCase().trim().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    setFormData({ ...formData, title, slug });
+    setFormData(prev => ({ ...prev, title, slug }));
   };
 
+  // Don't render until client-side hydration is complete
   if (!mounted) return null;
+
+  // Show a centered spinner while fetching post data in edit mode
+  if (fetching) {
+    return (
+      <div className="max-w-5xl flex flex-col items-center justify-center min-h-[60vh] gap-6">
+        <Loader2 className="animate-spin text-primary" size={48} />
+        <p className="font-black uppercase tracking-[0.2em] text-sm text-secondary">
+          Loading Post Data...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl">
@@ -245,8 +265,12 @@ function WriteBlogContent() {
           <PenTool size={32} />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight mb-2 uppercase">Create New Insight</h1>
-          <p className="text-secondary font-bold uppercase tracking-[0.2em] text-xs">Share your knowledge with the world</p>
+          <h1 className="text-4xl font-black tracking-tight mb-2 uppercase">
+            {editId ? 'Edit Insight' : 'Create New Insight'}
+          </h1>
+          <p className="text-secondary font-bold uppercase tracking-[0.2em] text-xs">
+            {editId ? 'Update your published post' : 'Share your knowledge with the world'}
+          </p>
         </div>
       </div>
 
@@ -285,7 +309,7 @@ function WriteBlogContent() {
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                 className="w-full px-6 py-4 bg-light dark:bg-dark border border-border rounded-2xl focus:outline-none focus:border-primary font-bold transition-all appearance-none"
               >
                 {categories.filter(c => c !== 'All').map(cat => (
@@ -308,7 +332,7 @@ function WriteBlogContent() {
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button 
                       type="button"
-                      onClick={() => setFormData({ ...formData, image: '' })}
+                      onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
                       className="p-4 bg-red-500 text-white rounded-full hover:scale-110 transition-all"
                     >
                       <X size={24} />
@@ -351,7 +375,7 @@ function WriteBlogContent() {
               required
               rows={2}
               value={formData.excerpt}
-              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
               placeholder="Give readers a quick taste of what to expect..."
               className="w-full px-6 py-4 bg-light dark:bg-dark border border-border rounded-2xl focus:outline-none focus:border-primary font-medium transition-all resize-none shadow-inner"
             />
@@ -367,7 +391,7 @@ function WriteBlogContent() {
                 ref={quillRef}
                 theme="snow"
                 value={formData.content}
-                onChange={(content: string) => setFormData({ ...formData, content })}
+                onChange={(content: string) => setFormData(prev => ({ ...prev, content }))}
                 modules={quillModules}
                 placeholder="Share your deep knowledge here..."
               />
@@ -391,7 +415,7 @@ function WriteBlogContent() {
                  animate={{ opacity: 1, x: 0 }}
                  className="bg-green-500/10 text-green-500 px-6 py-3 rounded-xl font-bold border border-green-500/20"
                >
-                 🚀 Insight published successfully!
+                 🚀 {editId ? 'Insight updated successfully!' : 'Insight published successfully!'}
                </motion.div>
              )}
              <div className="flex-1" />
@@ -400,7 +424,7 @@ function WriteBlogContent() {
               type="submit"
               className="w-full md:w-auto px-12 py-5 bg-primary text-white font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 shadow-xl shadow-primary/20 flex items-center justify-center gap-4 uppercase tracking-widest text-sm"
             >
-              {loading ? 'Publishing...' : 'Publish Insight'}
+              {loading ? (editId ? 'Updating...' : 'Publishing...') : (editId ? 'Update Insight' : 'Publish Insight')}
               {!loading && <Send size={20} />}
             </button>
           </div>

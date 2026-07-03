@@ -6,13 +6,25 @@
   --foreground-rgb: 17, 24, 39;
   --background-start-rgb: 249, 250, 251;
   --background-end-rgb: 249, 250, 251;
+  --color-secondary: 75 85 99; /* #4B5563 */
+  --color-border: 229 231 235; /* #E5E7EB */
+}
+
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 15, 23, 42;
+  --background-end-rgb: 15, 23, 42;
+  --color-secondary: 156 163 175; /* #9CA3AF */
+  --color-border: 51 65 85; /* #334155 */
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 15, 23, 42;
     --background-end-rgb: 15, 23, 42;
+    --color-secondary: 156 163 175;
+    --color-border: 51 65 85;
   }
 }
 

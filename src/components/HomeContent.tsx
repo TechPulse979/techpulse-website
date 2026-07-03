@@ -15,28 +15,33 @@ import Hero from "@/components/Hero";
 export default function HomeContent() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [posts, setPosts] = useState<Post[]>([]);
+  const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/posts');
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setPosts(data);
-        } else {
-          console.error('API did not return an array:', data);
-          setPosts([]);
+        const [postsRes, settingsRes] = await Promise.all([
+          fetch('/api/posts'),
+          fetch('/api/settings')
+        ]);
+        const postsData = await postsRes.json();
+        const settingsData = await settingsRes.json();
+
+        if (Array.isArray(postsData)) {
+          setPosts(postsData);
+        }
+        if (settingsData && !settingsData.error) {
+          setSettings(settingsData);
         }
       } catch (error) {
-        console.error('Failed to fetch posts:', error);
-        setPosts([]);
+        console.error('Failed to fetch homepage data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPosts();
+    fetchData();
   }, []);
 
   const filteredPosts = Array.isArray(posts) 
@@ -47,7 +52,7 @@ export default function HomeContent() {
 
   return (
     <>
-      <Navbar />
+      <Navbar settings={settings} />
       <main className="bg-light dark:bg-dark min-h-screen">
         {loading ? (
           <div className="h-screen flex flex-col items-center justify-center text-primary gap-4">
@@ -56,7 +61,7 @@ export default function HomeContent() {
           </div>
         ) : (
           <>
-            <Hero />
+            <Hero settings={settings} />
             {featuredPost && <FeaturedSection post={featuredPost} />}
             
             <section className="px-6 py-12 max-w-7xl mx-auto">
@@ -104,7 +109,7 @@ export default function HomeContent() {
           </>
         )}
       </main>
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

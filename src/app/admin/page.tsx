@@ -18,22 +18,37 @@ import { useState, useEffect } from "react";
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const [stats, setStats] = useState({
-    posts: 0,
-    views: 0,
-    admins: 1,
-    messages: 0
+    totalPosts: 0,
+    publishedPosts: 0,
+    draftPosts: 0,
+    activeAdmins: 1,
+    totalMessages: 0,
+    unreadMessages: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
+  const [recentMessages, setRecentMessages] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await fetch("/api/posts");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setStats(prev => ({ ...prev, posts: data.length }));
-          setRecentPosts(data.slice(0, 3));
+        const [postsRes, statsRes, messagesRes] = await Promise.all([
+          fetch("/api/posts"),
+          fetch("/api/admin/stats"),
+          fetch("/api/messages")
+        ]);
+        const postsData = await postsRes.json();
+        const statsData = await statsRes.json();
+        const messagesData = await messagesRes.json();
+
+        if (Array.isArray(postsData)) {
+          setRecentPosts(postsData.slice(0, 3));
+        }
+        if (statsData && !statsData.error) {
+          setStats(statsData);
+        }
+        if (Array.isArray(messagesData)) {
+          setRecentMessages(messagesData);
         }
       } catch (err) {
         console.error("Dashboard fetch failed", err);
@@ -45,11 +60,13 @@ export default function AdminDashboard() {
   }, []);
 
   const statsDisplay = [
-    { name: "Total Posts", value: stats.posts, icon: <FileText className="text-blue-500" />, trend: "Live from DB" },
-    { name: "Total Views", value: stats.views, icon: <Eye className="text-purple-500" />, trend: "Coming soon" },
-    { name: "Active Admins", value: stats.admins, icon: <Users className="text-green-500" />, trend: "Authorized" },
-    { name: "Messages", value: stats.messages, icon: <MessageSquare className="text-orange-500" />, trend: "Inbox" },
+    { name: "Total Insights", value: stats.totalPosts, icon: <FileText className="text-blue-500" />, trend: `${stats.publishedPosts} live` },
+    { name: "Draft Stories", value: stats.draftPosts, icon: <Clock className="text-purple-500" />, trend: "In progress" },
+    { name: "Core Administrators", value: stats.activeAdmins, icon: <Users className="text-green-500" />, trend: "Active team" },
+    { name: "Inbox Messages", value: stats.unreadMessages, icon: <MessageSquare className="text-orange-500" />, trend: `${stats.totalMessages} total` },
   ];
+
+  const unreadMessagesList = recentMessages.filter(msg => !msg.read).slice(0, 3);
 
   return (
     <div className="space-y-12">
@@ -117,7 +134,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  <Link href="/admin/manage" className="p-3 bg-light dark:bg-dark rounded-xl text-secondary hover:text-primary transition-all">
+                  <Link href={`/admin/write?edit=${post._id}`} className="p-3 bg-light dark:bg-dark rounded-xl text-secondary hover:text-primary transition-all">
                     <FileText size={20} />
                   </Link>
                 </div>
@@ -136,10 +153,32 @@ export default function AdminDashboard() {
             <MessageSquare className="text-primary" /> New Messages
           </h2>
           <div className="space-y-4">
-            <div className="p-10 bg-white dark:bg-dark/50 border border-border rounded-[2rem] text-center">
-              <MessageSquare size={32} className="mx-auto mb-4 opacity-20" />
-              <p className="text-secondary font-bold uppercase tracking-widest text-[10px]">No messages in your pulse inbox yet.</p>
-            </div>
+            {loading ? (
+              <div className="flex justify-center p-8 bg-white dark:bg-dark/50 border border-border rounded-[2rem]">
+                <Loader2 className="animate-spin text-primary" size={24} />
+              </div>
+            ) : unreadMessagesList.length > 0 ? (
+              unreadMessagesList.map((msg: any) => (
+                <div key={msg._id} className="p-6 bg-white dark:bg-dark/50 border border-border rounded-3xl hover:border-primary/30 transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-black text-xs uppercase tracking-tight truncate max-w-[120px]">{msg.name}</span>
+                      <span className="text-[8px] font-bold text-secondary uppercase tracking-widest">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <h4 className="font-extrabold text-sm mb-1 text-primary line-clamp-1">{msg.subject}</h4>
+                    <p className="text-secondary text-xs line-clamp-2 leading-relaxed">{msg.message}</p>
+                  </div>
+                  <Link href="/admin/messages" className="mt-4 text-[9px] font-black uppercase tracking-widest text-primary hover:underline self-start">
+                    Go to Inbox &rarr;
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <div className="p-10 bg-white dark:bg-dark/50 border border-border rounded-[2rem] text-center">
+                <MessageSquare size={32} className="mx-auto mb-4 opacity-20" />
+                <p className="text-secondary font-bold uppercase tracking-widest text-[10px]">No new unread messages in your pulse inbox.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

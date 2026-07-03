@@ -30,6 +30,16 @@ export default function BlogListingContent() {
     fetchPosts();
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const search = params.get("search");
+      if (search) {
+        setSearchQuery(search);
+      }
+    }
+  }, []);
+
   const filteredPosts = posts.filter(post => {
     const matchesCategory = activeCategory === "All" || post.category === activeCategory;
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 

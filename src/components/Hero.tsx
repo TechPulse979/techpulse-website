@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Terminal, Cpu, Globe } from "lucide-react";
 import Link from "next/link";
 
-export default function Hero() {
+export default function Hero({ settings }: { settings?: any }) {
   return (
     <section className="relative pt-40 pb-24 px-6 overflow-hidden bg-light dark:bg-dark">
       {/* Background Decorative Elements */}
@@ -32,21 +32,23 @@ export default function Hero() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-white/5 border border-border rounded-full mb-8 shadow-sm"
           >
             <Sparkles size={16} className="text-primary" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">The Future of Tech is Here</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">
+              {settings?.heroTopText || "The Future of Tech is Here"}
+            </span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl md:text-8xl font-black tracking-tight mb-8 leading-[0.9] text-balance"
+            className="text-5xl md:text-8xl font-black tracking-tight mb-8 leading-[0.9] text-balance text-dark dark:text-white"
           >
-            Decoding the{" "}
+            {settings?.heroTitlePrefix || "Decoding the"}{" "}
             <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-              Digital Pulse
+              {settings?.heroTitleHighlight || "Digital Pulse"}
             </span>{" "}
             <br />
-            of Tomorrow.
+            {settings?.heroTitleSuffix || "of Tomorrow."}
           </motion.h1>
 
           <motion.p
@@ -55,8 +57,7 @@ export default function Hero() {
             transition={{ delay: 0.2 }}
             className="max-w-2xl text-lg md:text-xl text-secondary font-medium mb-12 leading-relaxed"
           >
-            Explore deep dives into AI, Software Architecture, and the rapidly evolving tech landscape.
-            Crafted for developers, by enthusiasts.
+            {settings?.heroSubtitle || "Explore deep dives into AI, Software Architecture, and the rapidly evolving tech landscape. Crafted for developers, by enthusiasts."}
           </motion.p>
 
           <motion.div
@@ -87,9 +88,9 @@ export default function Hero() {
             className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 mt-14"
           >
             {[
-              { value: "500+", label: "Articles" },
-              { value: "50K+", label: "Readers" },
-              { value: "12", label: "Categories" },
+              { value: settings?.stat1Value || "500+", label: settings?.stat1Label || "Articles" },
+              { value: settings?.stat2Value || "50K+", label: settings?.stat2Label || "Readers" },
+              { value: settings?.stat3Value || "12", label: settings?.stat3Label || "Categories" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-3xl font-black tracking-tight text-dark dark:text-white">{stat.value}</div>

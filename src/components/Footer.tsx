@@ -1,7 +1,43 @@
-import Link from "next/link";
-import { Twitter, Github, Linkedin, Mail, Zap, ArrowRight } from "lucide-react";
+"use client";
 
-export default function Footer() {
+import Link from "next/link";
+import { Twitter, Github, Linkedin, Mail, Zap, ArrowRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+
+export default function Footer({ settings }: { settings?: any }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatus("success");
+        setMessage(data.message || "Subscribed successfully!");
+        setEmail("");
+      } else {
+        setStatus("error");
+        setMessage(data.error || "Failed to subscribe.");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+      setMessage("An unexpected error occurred.");
+    }
+  };
+
   return (
     <footer className="bg-dark text-white pt-32 pb-16 px-6 overflow-hidden relative">
       {/* Background blobs for depth */}
@@ -13,26 +49,45 @@ export default function Footer() {
           {/* Brand & Newsletter Column */}
           <div className="bg-[#1E293B] backdrop-blur-xl border border-white/5 p-10 md:p-14 rounded-[2.5rem] shadow-2xl shadow-black/40">
             <h2 className="text-3xl font-black mb-4 leading-tight tracking-tight">
-              Subscribe to our newsletter
+              {settings?.newsletterTitle || "Subscribe to our newsletter"}
             </h2>
             <p className="text-gray-400 text-sm mb-10 leading-relaxed font-medium">
-              Get weekly updates on the latest tech trends and exclusive<br className="hidden md:block" /> insights delivered to your inbox.
+              {settings?.newsletterSubtitle || "Get weekly updates on the latest tech trends and exclusive insights delivered to your inbox."}
             </p>
             
-            <form className="flex flex-col sm:flex-row gap-4 mb-4">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 mb-4">
               <input
                 type="email"
                 placeholder="youremail@example.com"
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all placeholder:text-gray-500 font-medium"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={status === "loading"}
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-sm text-white focus:outline-none focus:border-primary/50 transition-all placeholder:text-gray-500 font-medium disabled:opacity-50"
                 required
               />
               <button
                 type="submit"
-                className="bg-primary hover:bg-purple-600 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-xl flex items-center justify-center transition-all"
+                disabled={status === "loading"}
+                className="bg-primary hover:bg-purple-600 disabled:opacity-50 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-xl flex items-center justify-center transition-all cursor-pointer min-w-[160px]"
               >
-                Subscribe Now
+                {status === "loading" ? (
+                  <Loader2 className="animate-spin" size={16} />
+                ) : (
+                  "Subscribe Now"
+                )}
               </button>
             </form>
+
+            {status !== "idle" && message && (
+              <div className={`mt-4 p-4 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
+                status === "success" 
+                  ? "bg-green-500/10 text-green-400 border border-green-500/20" 
+                  : "bg-red-500/10 text-red-400 border border-red-500/20"
+              }`}>
+                {status === "success" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                <span>{message}</span>
+              </div>
+            )}
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
               NO SPAM, JUST QUALITY INSIGHTS. UNSUBSCRIBE ANYTIME.
             </p>
@@ -41,25 +96,25 @@ export default function Footer() {
           {/* Links and Contact Column */}
           <div className="lg:pl-10">
             <div className="flex items-center space-x-3 mb-12">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
-                <Zap size={24} fill="currentColor" />
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30 font-black text-lg uppercase">
+                {settings?.appLogoText || "T"}
               </div>
               <span className="text-2xl font-black tracking-tight text-white">
-                TechPulse
+                {settings?.appName || "TechPulse"}
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-12 leading-relaxed font-medium max-w-sm">
-              Staying ahead in the fast-paced world of technology. We deliver high-quality, research-driven content for engineers and tech enthusiasts.
+              {settings?.footerAbout || "Staying ahead in the fast-paced world of technology. We deliver high-quality, research-driven content for engineers and tech enthusiasts."}
             </p>
             
             <div className="flex space-x-4 mb-10">
-              <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all duration-300">
+              <a href={settings?.twitterUrl || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all duration-300">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all duration-300">
+              <a href={settings?.githubUrl || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all duration-300">
                 <Github size={18} />
               </a>
-              <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all duration-300">
+              <a href={settings?.linkedinUrl || "#"} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary transition-all duration-300">
                 <Linkedin size={18} />
               </a>
             </div>
@@ -67,7 +122,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col md:row justify-between items-center py-10 border-t border-white/5 text-gray-500 font-bold text-[10px] uppercase tracking-widest">
-           <p>© 2026 TechPulse Studio. All Rights Reserved.</p>
+           <p>© {new Date().getFullYear()} {settings?.appName || "TechPulse"} Studio. All Rights Reserved.</p>
            <div className="flex space-x-8 mt-6 md:mt-0">
               <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,7 @@ import {
   FileText,
   Users,
   MessageSquare,
+  Settings,
   LogOut,
   ChevronRight,
   Menu,
@@ -21,6 +22,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: session } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [appName, setAppName] = useState("TechPulse");
+  const [appLogoText, setAppLogoText] = useState("T");
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          if (data.appName) setAppName(data.appName);
+          if (data.appLogoText) setAppLogoText(data.appLogoText);
+        }
+      })
+      .catch(err => console.error("Error fetching settings in admin layout:", err));
+  }, []);
 
   if (pathname === "/admin/login") return <>{children}</>;
 
@@ -30,6 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Manage Blogs", href: "/admin/manage", icon: <FileText size={20} /> },
     { name: "Users", href: "/admin/users", icon: <Users size={20} /> },
     { name: "Messages", href: "/admin/messages", icon: <MessageSquare size={20} /> },
+    { name: "Settings", href: "/admin/settings", icon: <Settings size={20} /> },
   ];
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
@@ -85,8 +101,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-72 bg-white dark:bg-dark border-r border-border hidden lg:flex flex-col fixed inset-y-0 z-50">
         <div className="p-8">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-black text-xl">T</div>
-            <span className="font-black text-xl tracking-tighter uppercase">TechPulse</span>
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-black text-xl uppercase">{appLogoText}</div>
+            <span className="font-black text-xl tracking-tighter uppercase">{appName}</span>
           </Link>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
@@ -98,8 +114,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Mobile Top Bar */}
       <header className="lg:hidden fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 py-4 bg-white/90 dark:bg-dark/90 backdrop-blur-md border-b border-border">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white font-black">T</div>
-          <span className="font-black text-lg tracking-tighter uppercase">TechPulse</span>
+          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white font-black uppercase">{appLogoText}</div>
+          <span className="font-black text-lg tracking-tighter uppercase">{appName}</span>
         </Link>
         <button
           onClick={() => setMobileOpen(true)}

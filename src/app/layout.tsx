@@ -7,8 +7,8 @@ import "react-quill-new/dist/quill.snow.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "TechPulse | Modern Blog for Tech Enthusiasts",
-  description: "Stay updated with the latest in AI, Programming, Cloud, and more.",
+  title: "Mind Rovia Blog – Expert Articles, Guides & Latest Insights",
+  description: "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia.",
 };
 
 import AuthProvider from "@/components/AuthProvider";

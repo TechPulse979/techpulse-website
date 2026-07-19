@@ -9,16 +9,16 @@ export async function generateMetadata(): Promise<Metadata> {
     const settings = await Setting.findOne();
     if (settings) {
       return {
-        title: settings.metaTitle || "TechPulse | Modern Blog for Tech Enthusiasts",
-        description: settings.metaDescription || "Stay updated with the latest in AI, Programming, Cloud, and more.",
+        title: settings.metaTitle || "Mind Rovia Blog – Expert Articles, Guides & Latest Insights",
+        description: settings.metaDescription || "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia.",
       };
     }
   } catch (error) {
     console.error("Error generating metadata in page.tsx:", error);
   }
   return {
-    title: "TechPulse | Modern Blog for Tech Enthusiasts",
-    description: "Stay updated with the latest in AI, Programming, Cloud, and more.",
+    title: "Mind Rovia Blog – Expert Articles, Guides & Latest Insights",
+    description: "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia.",
   };
 }
 

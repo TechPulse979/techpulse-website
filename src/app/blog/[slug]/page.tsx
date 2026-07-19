@@ -5,6 +5,7 @@ import { Clock, ArrowLeft, Share2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import connectDB from "@/lib/mongodb";
 import Post from "@/models/Post";
+import Setting from "@/models/Setting";
 import { notFound } from "next/navigation";
 import { getReadingTime } from "@/lib/readingTime";
 import type { Metadata } from "next";
@@ -68,7 +69,7 @@ export async function generateMetadata({
 
 // ─── JSON-LD Structured Data builders ─────────────────────────────────────
 
-function buildArticleSchema(post: any, seo: any) {
+function buildArticleSchema(post: any, seo: any, appName: string) {
   if (!seo?.articleSchema?.enabled) return null;
 
   const schema: any = {
@@ -83,7 +84,7 @@ function buildArticleSchema(post: any, seo: any) {
     },
     publisher: {
       "@type": "Organization",
-      name: "TechPulse",
+      name: appName,
     },
     datePublished: post.createdAt,
     dateModified: post.updatedAt || post.createdAt,
@@ -172,9 +173,11 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
   }
 
   const seo = post.seo || {};
+  const settings = await Setting.findOne().lean();
+  const appName = settings?.appName || "MIND ROVIA";
 
   // Build structured data
-  const articleSchema = buildArticleSchema(post, seo);
+  const articleSchema = buildArticleSchema(post, seo, appName);
   const faqSchema = buildFaqSchema(seo);
   const breadcrumbSchema = buildBreadcrumbSchema(post, seo);
 
@@ -307,7 +310,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           <div 
-            className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:font-medium prose-p:text-secondary prose-strong:text-dark dark:prose-strong:text-white"
+            className="blog-content max-w-none"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </article>

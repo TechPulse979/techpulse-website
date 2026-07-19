@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, Suspense, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { categories } from '@/data/blog';
 import { PenTool, FileText, Send, Image as ImageIcon, Tag, Loader2, AlertCircle, X, Upload } from 'lucide-react';
@@ -41,10 +41,19 @@ function WriteBlogContent() {
   });
 
   const [seoData, setSeoData] = useState<SeoData>(defaultSeoData);
+  const [categoriesList, setCategoriesList] = useState<string[]>(["AI", "Programming", "Tutorials", "Cloud", "DevOps"]);
 
-  // Effect 1: mark component as mounted (client-side hydration)
+  // Effect 1: mark component as mounted (client-side hydration) and fetch settings
   useEffect(() => {
     setMounted(true);
+    fetch("/api/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.categories && data.categories.length > 0) {
+          setCategoriesList(data.categories);
+        }
+      })
+      .catch(err => console.error("Failed to load settings in write page", err));
   }, []);
 
   // Effect 2: fetch post data when editId is available AND component is mounted
@@ -61,6 +70,14 @@ function WriteBlogContent() {
       const res = await fetch(`/api/posts/${editId}`);
       if (res.ok) {
         const data = await res.json();
+        if (data.category) {
+          setCategoriesList(prev => {
+            if (!prev.includes(data.category)) {
+              return [...prev, data.category];
+            }
+            return prev;
+          });
+        }
         setFormData({
           title: data.title || '',
           slug: data.slug || '',
@@ -243,6 +260,34 @@ function WriteBlogContent() {
     setFormData(prev => ({ ...prev, title, slug }));
   };
 
+  const editorContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      const attachListeners = () => {
+        const pickers = node.querySelectorAll(".ql-picker");
+        if (pickers.length > 0) {
+          pickers.forEach((picker) => {
+            picker.addEventListener("mousedown", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }, { passive: false });
+          });
+          return true;
+        }
+        return false;
+      };
+
+      if (!attachListeners()) {
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          if (attachListeners() || attempts > 15) {
+            clearInterval(interval);
+          }
+        }, 100);
+      }
+    }
+  }, []);
+
   // Don't render until client-side hydration is complete
   if (!mounted) return null;
 
@@ -307,15 +352,21 @@ function WriteBlogContent() {
                 <Tag size={14} className="text-primary" />
                 Category
               </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-6 py-4 bg-light dark:bg-dark border border-border rounded-2xl focus:outline-none focus:border-primary font-bold transition-all appearance-none"
-              >
-                {categories.filter(c => c !== 'All').map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-6 py-4 bg-light dark:bg-dark border border-border rounded-2xl focus:outline-none focus:border-primary font-bold transition-all appearance-none"
+                >
+                  {categoriesList.filter(c => c !== 'All').map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-secondary text-right">
+                  Manage categories in{" "}
+                  <a href="/admin/settings" className="text-primary hover:underline">Settings</a>
+                </p>
+              </div>
             </div>
           </div>
 
@@ -386,7 +437,7 @@ function WriteBlogContent() {
               <FileText size={14} className="text-primary" />
               Full Content (Rich Text)
             </label>
-            <div className="min-h-[400px] quill-editor">
+            <div ref={editorContainerRef} className="min-h-[400px] quill-editor">
               <ReactQuill
                 ref={quillRef}
                 theme="snow"

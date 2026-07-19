@@ -1,17 +1,17 @@
 import mongoose, { Schema, model, models } from 'mongoose';
 
 const SettingSchema = new Schema({
-  appName: { type: String, default: "TechPulse" },
-  appLogoText: { type: String, default: "T" },
-  metaTitle: { type: String, default: "TechPulse | Modern Blog for Tech Enthusiasts" },
-  metaDescription: { type: String, default: "Stay updated with the latest in AI, Programming, Cloud, and more." },
+  appName: { type: String, default: "MIND ROVIA" },
+  appLogoText: { type: String, default: "MR" },
+  metaTitle: { type: String, default: "Mind Rovia Blog – Expert Articles, Guides & Latest Insights" },
+  metaDescription: { type: String, default: "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia." },
   
   // Hero section
-  heroTopText: { type: String, default: "The Future of Tech is Here" },
-  heroTitlePrefix: { type: String, default: "Decoding the" },
-  heroTitleHighlight: { type: String, default: "Digital Pulse" },
-  heroTitleSuffix: { type: String, default: "of Tomorrow." },
-  heroSubtitle: { type: String, default: "Explore deep dives into AI, Software Architecture, and the rapidly evolving tech landscape. Crafted for developers, by enthusiasts." },
+  heroTopText: { type: String, default: "Knowledge for the Curious Mind" },
+  heroTitlePrefix: { type: String, default: "Discover Knowledge" },
+  heroTitleHighlight: { type: String, default: "Explore Ideas" },
+  heroTitleSuffix: { type: String, default: "and Grow Smarter" },
+  heroSubtitle: { type: String, default: "Explore a world of knowledge where innovation meets inspiration. From technology and entrepreneurship to wellness, travel, finance, and everyday living, Mindrovia brings you content that truly matters." },
   
   // Quick stats strip
   stat1Value: { type: String, default: "500+" },
@@ -30,6 +30,8 @@ const SettingSchema = new Schema({
   twitterUrl: { type: String, default: "#" },
   githubUrl: { type: String, default: "#" },
   linkedinUrl: { type: String, default: "#" },
+  // Categories list
+  categories: { type: [String], default: ["AI", "Programming", "Tutorials", "Cloud", "DevOps"] },
 }, { timestamps: true });
 
 const Setting = models.Setting || model('Setting', SettingSchema);

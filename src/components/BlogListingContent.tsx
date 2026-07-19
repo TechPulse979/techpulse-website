@@ -13,21 +13,30 @@ export default function BlogListingContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<any>(null);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/posts');
-        const data = await response.json();
-        setPosts(data);
+        const [postsRes, settingsRes] = await Promise.all([
+          fetch('/api/posts'),
+          fetch('/api/settings')
+        ]);
+        const postsData = await postsRes.json();
+        const settingsData = await settingsRes.json();
+
+        setPosts(postsData);
+        if (settingsData && !settingsData.error) {
+          setSettings(settingsData);
+        }
       } catch (error) {
-        console.error('Failed to fetch posts:', error);
+        console.error('Failed to fetch blog listing data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPosts();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -49,7 +58,7 @@ export default function BlogListingContent() {
 
   return (
     <>
-      <Navbar />
+      <Navbar settings={settings} />
       <main className="pt-32 bg-light dark:bg-dark min-h-screen">
         <section className="px-6 py-20 max-w-7xl mx-auto">
           <div className="bg-[#0F172A] p-10 md:p-20 rounded-[2.5rem] md:rounded-[4rem] mb-12 md:mb-20 relative overflow-hidden shadow-2xl">
@@ -70,6 +79,7 @@ export default function BlogListingContent() {
                <CategoryPills 
                 activeCategory={activeCategory} 
                 onCategoryChange={setActiveCategory} 
+                categories={settings?.categories ? ["All", ...settings.categories.filter((c: string) => c !== "All")] : undefined}
               />
             </div>
             <div className="w-full lg:max-w-sm relative">
@@ -105,7 +115,7 @@ export default function BlogListingContent() {
           )}
         </section>
       </main>
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

@@ -77,6 +77,7 @@ export default function HomeContent() {
             <CategoryPills 
               activeCategory={activeCategory} 
               onCategoryChange={setActiveCategory} 
+              categories={settings?.categories ? ["All", ...settings.categories.filter((c: string) => c !== "All")] : undefined}
             />
           </div>
           

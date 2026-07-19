@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,6 +11,18 @@ export default function ContactPage() {
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setSettings(data);
+        }
+      })
+      .catch((err) => console.error("Error fetching settings in ContactPage:", err));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +161,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="text-2xl font-extrabold mb-2 tracking-tight">Direct Channel</h3>
                     <p className="text-secondary font-bold mb-3">Reach out via secure mail.</p>
-                    <a href="mailto:hello@techpulse.io" className="text-2xl font-black text-primary hover:underline">hello@techpulse.io</a>
+                    <a href="mailto:hello@mindrovia.com" className="text-2xl font-black text-primary hover:underline">hello@mindrovia.com</a>
                   </div>
                 </div>
 
@@ -206,7 +218,7 @@ export default function ContactPage() {
                     <MapPin size={40} />
                   </div>
                   <div>
-                    <span className="font-black text-2xl block tracking-tighter">TECHPULSE STUDIO</span>
+                    <span className="font-black text-2xl block tracking-tighter">{settings?.appName ? `${settings.appName.toUpperCase()} STUDIO` : "MIND ROVIA STUDIO"}</span>
                     <span className="text-primary font-bold text-sm tracking-widest uppercase">Signal Center</span>
                   </div>
                 </div>

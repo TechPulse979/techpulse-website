@@ -2,12 +2,28 @@
 
 import Link from "next/link";
 import { Twitter, Github, Linkedin, Mail, Zap, ArrowRight, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function Footer({ settings }: { settings?: any }) {
+export default function Footer({ settings: initialSettings }: { settings?: any }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [settings, setSettings] = useState(initialSettings);
+
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    } else {
+      fetch("/api/settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setSettings(data);
+          }
+        })
+        .catch((err) => console.error("Error fetching settings in Footer:", err));
+    }
+  }, [initialSettings]);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,14 +113,14 @@ export default function Footer({ settings }: { settings?: any }) {
           <div className="lg:pl-10">
             <div className="flex items-center space-x-3 mb-12">
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30 font-black text-lg uppercase">
-                {settings?.appLogoText || "T"}
+                {settings?.appLogoText || "MR"}
               </div>
               <span className="text-2xl font-black tracking-tight text-white">
-                {settings?.appName || "TechPulse"}
+                {settings?.appName || "MIND ROVIA"}
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-12 leading-relaxed font-medium max-w-sm">
-              {settings?.footerAbout || "Staying ahead in the fast-paced world of technology. We deliver high-quality, research-driven content for engineers and tech enthusiasts."}
+              {settings?.footerAbout || "Explore a world of knowledge where innovation meets inspiration. From technology and entrepreneurship to wellness, travel, finance, and everyday living, Mindrovia brings you content that truly matters."}
             </p>
             
             <div className="flex space-x-4 mb-10">
@@ -120,9 +136,9 @@ export default function Footer({ settings }: { settings?: any }) {
             </div>
           </div>
         </div>
-
+ 
         <div className="flex flex-col md:row justify-between items-center py-10 border-t border-white/5 text-gray-500 font-bold text-[10px] uppercase tracking-widest">
-           <p>© {new Date().getFullYear()} {settings?.appName || "TechPulse"} Studio. All Rights Reserved.</p>
+           <p>© {new Date().getFullYear()} {settings?.appName || "MIND ROVIA"} Studio. All Rights Reserved.</p>
            <div className="flex space-x-8 mt-6 md:mt-0">
               <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>

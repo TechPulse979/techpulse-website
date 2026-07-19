@@ -17,7 +17,7 @@ const navLinks = [
   { name: "Contact", href: "/contact" },
 ];
 
-export default function Navbar({ settings }: { settings?: any }) {
+export default function Navbar({ settings: initialSettings }: { settings?: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -27,8 +27,25 @@ export default function Navbar({ settings }: { settings?: any }) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
 
-  const appName = settings?.appName || "TechPulse";
-  const appLogoText = settings?.appLogoText || "T";
+  const [settings, setSettings] = useState(initialSettings);
+
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(initialSettings);
+    } else {
+      fetch("/api/settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setSettings(data);
+          }
+        })
+        .catch((err) => console.error("Error fetching settings in Navbar:", err));
+    }
+  }, [initialSettings]);
+
+  const appName = settings?.appName || "MIND ROVIA";
+  const appLogoText = settings?.appLogoText || "MR";
 
   useEffect(() => {
     if (document.documentElement.classList.contains("dark")) {

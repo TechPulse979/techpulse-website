@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Subscriber from '@/models/Subscriber';
+import Setting from '@/models/Setting';
 
 export async function POST(request: Request) {
   try {
@@ -23,7 +24,10 @@ export async function POST(request: Request) {
 
     await Subscriber.create({ email: email.toLowerCase().trim() });
 
-    return NextResponse.json({ message: 'Thank you for subscribing to TechPulse!' }, { status: 201 });
+    const settings = await Setting.findOne().lean();
+    const appName = settings?.appName || "MIND ROVIA";
+
+    return NextResponse.json({ message: `Thank you for subscribing to ${appName}!` }, { status: 201 });
   } catch (error) {
     console.error('Newsletter subscription error:', error);
     return NextResponse.json({ error: 'Failed to subscribe. Please try again later.' }, { status: 500 });

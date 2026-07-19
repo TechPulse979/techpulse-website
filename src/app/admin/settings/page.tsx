@@ -1,17 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { 
-  Settings, 
-  Globe, 
-  Layout, 
-  BarChart, 
-  Mail, 
-  Loader2, 
-  Save, 
+import {
+  Settings,
+  Globe,
+  Layout,
+  BarChart,
+  Mail,
+  Loader2,
+  Save,
   CheckCircle,
-  Eye
+  Eye,
+  Pencil,
+  Trash2,
+  Check,
+  X
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -21,16 +25,16 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   
-  const [settings, setSettings] = useState({
-    appName: "TechPulse",
-    appLogoText: "T",
-    metaTitle: "TechPulse | Modern Blog for Tech Enthusiasts",
-    metaDescription: "Stay updated with the latest in AI, Programming, Cloud, and more.",
-    heroTopText: "The Future of Tech is Here",
-    heroTitlePrefix: "Decoding the",
-    heroTitleHighlight: "Digital Pulse",
-    heroTitleSuffix: "of Tomorrow.",
-    heroSubtitle: "Explore deep dives into AI, Software Architecture, and the rapidly evolving tech landscape. Crafted for developers, by enthusiasts.",
+  const [settings, setSettings] = useState<any>({
+    appName: "MIND ROVIA",
+    appLogoText: "MR",
+    metaTitle: "Mind Rovia Blog – Expert Articles, Guides & Latest Insights",
+    metaDescription: "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia.",
+    heroTopText: "Knowledge for the Curious Mind",
+    heroTitlePrefix: "Discover Knowledge",
+    heroTitleHighlight: "Explore Ideas",
+    heroTitleSuffix: "and Grow Smarter",
+    heroSubtitle: "Explore a world of knowledge where innovation meets inspiration. From technology and entrepreneurship to wellness, travel, finance, and everyday living, Mindrovia brings you content that truly matters.",
     stat1Value: "500+",
     stat1Label: "Articles",
     stat2Value: "50K+",
@@ -39,13 +43,85 @@ export default function AdminSettings() {
     stat3Label: "Categories",
     newsletterTitle: "Subscribe to our newsletter",
     newsletterSubtitle: "Get weekly updates on the latest tech trends and exclusive insights delivered to your inbox.",
-    footerAbout: "Staying ahead in the fast-paced world of technology. We deliver high-quality, research-driven content for engineers and tech enthusiasts.",
+    footerAbout: "Explore a world of knowledge where innovation meets inspiration. From technology and entrepreneurship to wellness, travel, finance, and everyday living, Mindrovia brings you content that truly matters.",
     twitterUrl: "#",
     githubUrl: "#",
     linkedinUrl: "#",
+    categories: ["AI", "Programming", "Tutorials", "Cloud", "DevOps"],
   });
 
   const [activeTab, setActiveTab] = useState<"general" | "hero" | "stats" | "footer">("general");
+  const [newCatName, setNewCatName] = useState("");
+
+  // Category editor working model. Each item keeps `original` (its name as loaded
+  // from the DB, or null if newly added) so we can tell renames apart from
+  // add + delete when we build the cascade payload on save.
+  type CatItem = { id: string; name: string; original: string | null };
+  const [catItems, setCatItems] = useState<CatItem[]>([]);
+  const [deletedOriginals, setDeletedOriginals] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState("");
+  const [catError, setCatError] = useState("");
+  const idCounter = useRef(0);
+  const nextId = () => `cat-${idCounter.current++}`;
+
+  const setCatsFromList = (list: string[]) => {
+    setCatItems(list.map((c) => ({ id: nextId(), name: c, original: c })));
+    setDeletedOriginals([]);
+    setEditingId(null);
+    setEditingValue("");
+    setCatError("");
+  };
+
+  const isDuplicateName = (name: string, exceptId?: string) =>
+    catItems.some((c) => c.id !== exceptId && c.name.toLowerCase() === name.toLowerCase());
+
+  const handleAddCategory = () => {
+    const trimmed = newCatName.trim();
+    if (!trimmed) return;
+    if (isDuplicateName(trimmed)) {
+      setCatError(`"${trimmed}" already exists.`);
+      return;
+    }
+    setCatItems((prev) => [...prev, { id: nextId(), name: trimmed, original: null }]);
+    setNewCatName("");
+    setCatError("");
+  };
+
+  const startEditCategory = (item: CatItem) => {
+    setEditingId(item.id);
+    setEditingValue(item.name);
+    setCatError("");
+  };
+
+  const cancelEditCategory = () => {
+    setEditingId(null);
+    setEditingValue("");
+    setCatError("");
+  };
+
+  const saveEditCategory = (id: string) => {
+    const trimmed = editingValue.trim();
+    if (!trimmed) {
+      setCatError("Category name cannot be empty.");
+      return;
+    }
+    if (isDuplicateName(trimmed, id)) {
+      setCatError(`"${trimmed}" already exists.`);
+      return;
+    }
+    setCatItems((prev) => prev.map((c) => (c.id === id ? { ...c, name: trimmed } : c)));
+    cancelEditCategory();
+  };
+
+  const handleRemoveCategory = (item: CatItem) => {
+    setCatItems((prev) => prev.filter((c) => c.id !== item.id));
+    if (item.original) {
+      setDeletedOriginals((prev) => (prev.includes(item.original!) ? prev : [...prev, item.original!]));
+    }
+    if (editingId === item.id) cancelEditCategory();
+    setCatError("");
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -54,7 +130,12 @@ export default function AdminSettings() {
         const data = await res.json();
         if (data && !data.error) {
           // Merge defaults in case db does not have some keys
-          setSettings(prev => ({ ...prev, ...data }));
+          setSettings((prev: any) => ({ ...prev, ...data }));
+          const cats: string[] =
+            data.categories && data.categories.length
+              ? data.categories
+              : ["AI", "Programming", "Tutorials", "Cloud", "DevOps"];
+          setCatsFromList(cats);
         }
       } catch (err) {
         console.error("Failed to load settings:", err);
@@ -67,23 +148,48 @@ export default function AdminSettings() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setSettings(prev => ({ ...prev, [name]: value }));
+    setSettings((prev: any) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Commit any category edit still open in the inline input before saving.
+    if (editingId) {
+      const trimmed = editingValue.trim();
+      if (!trimmed || isDuplicateName(trimmed, editingId)) {
+        setActiveTab("general");
+        setCatError(!trimmed ? "Category name cannot be empty." : `"${trimmed}" already exists.`);
+        return;
+      }
+      setCatItems((prev) => prev.map((c) => (c.id === editingId ? { ...c, name: trimmed } : c)));
+    }
+
     setSaving(true);
     setMessage(null);
+
+    // Build the category list plus the operations the API needs to cascade the
+    // changes onto existing posts (rename -> update posts, delete -> reassign).
+    const committed = catItems.map((c) =>
+      c.id === editingId ? { ...c, name: editingValue.trim() } : c
+    );
+    const categories = committed.map((c) => c.name);
+    const renames = committed
+      .filter((c) => c.original && c.original !== c.name)
+      .map((c) => ({ from: c.original as string, to: c.name }));
+    const deletes = deletedOriginals.filter((o) => !categories.includes(o));
+
     try {
       const res = await fetch("/api/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({ ...settings, categories, categoryOps: { renames, deletes } }),
       });
       const data = await res.json();
       if (res.ok) {
         setMessage({ type: "success", text: "Settings saved successfully! Homepage and Layout will update instantly." });
-        setSettings(prev => ({ ...prev, ...data }));
+        setSettings((prev: any) => ({ ...prev, ...data }));
+        setCatsFromList(data.categories || categories);
       } else {
         setMessage({ type: "error", text: data.error || "Failed to save settings." });
       }
@@ -197,6 +303,122 @@ export default function AdminSettings() {
                     className={textareaClass}
                     required
                   />
+                </div>
+
+                <div className="border-t border-border pt-6 mt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className={`${labelClass} mb-0`}>Blog Categories</label>
+                    <span className="text-secondary font-bold uppercase tracking-widest text-[10px]">
+                      {catItems.length} {catItems.length === 1 ? "category" : "categories"}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2.5">
+                    {catItems.map((item) =>
+                      editingId === item.id ? (
+                        <span
+                          key={item.id}
+                          className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 bg-white dark:bg-dark border border-primary rounded-xl"
+                        >
+                          <input
+                            autoFocus
+                            type="text"
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                saveEditCategory(item.id);
+                              } else if (e.key === "Escape") {
+                                e.preventDefault();
+                                cancelEditCategory();
+                              }
+                            }}
+                            className="w-28 bg-transparent text-xs font-black uppercase tracking-wider focus:outline-none text-dark dark:text-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => saveEditCategory(item.id)}
+                            title="Save name"
+                            className="text-green-500 hover:scale-110 transition-all"
+                          >
+                            <Check size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEditCategory}
+                            title="Cancel"
+                            className="text-secondary hover:text-red-500 hover:scale-110 transition-all"
+                          >
+                            <X size={14} />
+                          </button>
+                        </span>
+                      ) : (
+                        <span
+                          key={item.id}
+                          className="group inline-flex items-center gap-2 pl-4 pr-2.5 py-2 bg-primary/10 text-primary border border-primary/20 text-xs font-black uppercase tracking-wider rounded-xl"
+                        >
+                          {item.name}
+                          <span className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => startEditCategory(item)}
+                              title="Rename category"
+                              className="opacity-60 hover:opacity-100 hover:text-dark dark:hover:text-white transition-all"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCategory(item)}
+                              title="Delete category"
+                              className="opacity-60 hover:opacity-100 hover:text-red-500 transition-all"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </span>
+                        </span>
+                      )
+                    )}
+                    {catItems.length === 0 && (
+                      <p className="text-secondary text-xs italic">No categories defined. Please add at least one.</p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="e.g. Health, Finance, Travel"
+                      value={newCatName}
+                      onChange={(e) => {
+                        setNewCatName(e.target.value);
+                        if (catError) setCatError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCategory();
+                        }
+                      }}
+                      className="flex-1 px-5 py-3 bg-light dark:bg-dark border border-border rounded-xl focus:outline-none focus:border-primary font-bold text-sm transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCategory}
+                      className="px-6 bg-primary hover:bg-primary/90 text-white rounded-xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center cursor-pointer"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {catError && (
+                    <p className="text-red-500 text-[11px] font-bold uppercase tracking-wider">{catError}</p>
+                  )}
+
+                  <p className="text-secondary text-[11px] font-medium leading-relaxed">
+                    Renaming a category updates every post that uses it. Deleting one moves its posts to the first
+                    category in the list. Changes are saved when you press <span className="font-black">Save Settings</span>.
+                  </p>
                 </div>
               </motion.div>
             )}

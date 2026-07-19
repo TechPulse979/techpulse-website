@@ -22,8 +22,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: session } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [appName, setAppName] = useState("TechPulse");
-  const [appLogoText, setAppLogoText] = useState("T");
+  const [appName, setAppName] = useState("MIND ROVIA");
+  const [appLogoText, setAppLogoText] = useState("MR");
 
   useEffect(() => {
     fetch("/api/settings")

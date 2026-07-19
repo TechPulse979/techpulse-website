@@ -3,15 +3,33 @@ import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 import "@/styles/editor.css";
 import "react-quill-new/dist/quill.snow.css";
+import connectDB from "@/lib/mongodb";
+import Setting from "@/models/Setting";
+import AuthProvider from "@/components/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-export const metadata: Metadata = {
-  title: "Mind Rovia Blog – Expert Articles, Guides & Latest Insights",
-  description: "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia.",
-};
+const FALLBACK_TITLE = "Mind Rovia Blog – Expert Articles, Guides & Latest Insights";
+const FALLBACK_DESCRIPTION = "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia.";
 
-import AuthProvider from "@/components/AuthProvider";
+// Read the SEO title/description from Settings so the browser tab reflects what
+// the admin configures. Pages with their own generateMetadata (home, blog post)
+// still override this for their route.
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    await connectDB();
+    const settings = await Setting.findOne();
+    if (settings) {
+      return {
+        title: settings.metaTitle || FALLBACK_TITLE,
+        description: settings.metaDescription || FALLBACK_DESCRIPTION,
+      };
+    }
+  } catch (error) {
+    console.error("Error generating metadata in layout.tsx:", error);
+  }
+  return { title: FALLBACK_TITLE, description: FALLBACK_DESCRIPTION };
+}
 
 export default function RootLayout({
   children,

@@ -32,6 +32,48 @@ const SettingSchema = new Schema({
   linkedinUrl: { type: String, default: "#" },
   // Categories list
   categories: { type: [String], default: ["AI", "Programming", "Tutorials", "Cloud", "DevOps"] },
+
+  // About page content (managed via /admin/about)
+  about: {
+    storyLabel:        { type: String },
+    headingPrefix:     { type: String },
+    headingHighlight:  { type: String },
+    headingSuffix:     { type: String },
+    bio:               { type: String },
+    profileName:       { type: String },
+    profileImage:      { type: String },
+    stats:             { type: [{ label: String, value: String }], default: undefined },
+    toolkitHeading:    { type: String },
+    toolkitDescription:{ type: String },
+    skills:            { type: [String], default: undefined },
+    skillBars:         { type: [{ label: String, percent: Number }], default: undefined },
+    ctaText:           { type: String },
+    ctaLink:           { type: String },
+  },
+
+  // Contact page content (managed via /admin/contact)
+  contact: {
+    heroLabel:          { type: String },
+    headingPrefix:      { type: String },
+    headingHighlight:   { type: String },
+    subtitle:           { type: String },
+    email:              { type: String },
+    emailLabel:         { type: String },
+    emailDescription:   { type: String },
+    address:            { type: String },
+    addressLabel:       { type: String },
+    addressDescription: { type: String },
+    phone:              { type: String },
+    phoneLabel:         { type: String },
+    phoneDescription:   { type: String },
+    socialsTitle:       { type: String },
+    twitterUrl:         { type: String },
+    githubUrl:          { type: String },
+    linkedinUrl:        { type: String },
+    mapImage:           { type: String },
+    studioName:         { type: String },
+    studioTagline:      { type: String },
+  },
 }, { timestamps: true });
 
 const Setting = models.Setting || model('Setting', SettingSchema);

@@ -176,6 +176,14 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
   const settings = await Setting.findOne().lean();
   const appName = settings?.appName || "MIND ROVIA";
 
+  // Editor content often arrives with non-breaking spaces between words (a
+  // paste artifact). Because &nbsp; never allows a line break, whole paragraphs
+  // render as one unbreakable string and overflow horizontally. Convert them to
+  // normal spaces so the text wraps naturally within the reading column.
+  const cleanContent = (post.content || "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\u00a0/g, " ");
+
   // Build structured data
   const articleSchema = buildArticleSchema(post, seo, appName);
   const faqSchema = buildFaqSchema(seo);
@@ -309,9 +317,9 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
             />
           </div>
 
-          <div 
+          <div
             className="blog-content max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: cleanContent }}
           />
         </article>
       </main>

@@ -14,7 +14,9 @@ import {
   LogOut,
   ChevronRight,
   Menu,
-  X
+  X,
+  UserCircle,
+  Phone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -45,6 +47,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Manage Blogs", href: "/admin/manage", icon: <FileText size={20} /> },
     { name: "Users", href: "/admin/users", icon: <Users size={20} /> },
     { name: "Messages", href: "/admin/messages", icon: <MessageSquare size={20} /> },
+    { name: "About Page", href: "/admin/about", icon: <UserCircle size={20} /> },
+    { name: "Contact Page", href: "/admin/contact", icon: <Phone size={20} /> },
     { name: "Settings", href: "/admin/settings", icon: <Settings size={20} /> },
   ];
 

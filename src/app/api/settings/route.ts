@@ -41,6 +41,9 @@ export async function POST(request: Request) {
     let setting = await Setting.findOne();
     if (setting) {
       Object.assign(setting, settingsData);
+      // Nested objects need to be flagged so Mongoose persists deep changes.
+      if (settingsData.about) setting.markModified("about");
+      if (settingsData.contact) setting.markModified("contact");
       await setting.save();
     } else {
       setting = await Setting.create(settingsData);

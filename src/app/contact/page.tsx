@@ -1,25 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Mail, MapPin, Phone, Send, Twitter, Github, Linkedin, CheckCircle2 } from "lucide-react";
+import { defaultContact, mergeContact, type ContactContent } from "@/lib/pageDefaults";
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-  const [settings, setSettings] = useState<any>(null);
+  const [contact, setContact] = useState<ContactContent>(defaultContact);
 
   useEffect(() => {
     fetch("/api/settings")
       .then((res) => res.json())
       .then((data) => {
-        if (data && !data.error) {
-          setSettings(data);
-        }
+        if (data && !data.error) setContact(mergeContact(data.contact));
       })
       .catch((err) => console.error("Error fetching settings in ContactPage:", err));
   }, []);
@@ -44,16 +42,25 @@ export default function ContactPage() {
     }
   };
 
+  const telHref = `tel:${(contact.phone || "").replace(/[^\d+]/g, "")}`;
+  const socials = [
+    { Icon: Twitter, url: contact.twitterUrl },
+    { Icon: Github, url: contact.githubUrl },
+    { Icon: Linkedin, url: contact.linkedinUrl },
+  ];
+
   return (
     <>
       <Navbar />
       <main className="pt-32 bg-light dark:bg-dark min-h-screen">
         <section className="px-6 py-20 max-w-7xl mx-auto">
           <div className="max-w-4xl mb-24">
-            <span className="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-6 block">Connect</span>
-            <h1 className="text-6xl md:text-8xl font-extrabold mb-8 tracking-tighter text-balance">Get in <span className="text-primary italic">touch.</span></h1>
+            <span className="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-6 block">{contact.heroLabel}</span>
+            <h1 className="text-6xl md:text-8xl font-extrabold mb-8 tracking-tighter text-balance">
+              {contact.headingPrefix} <span className="text-primary italic">{contact.headingHighlight}</span>
+            </h1>
             <p className="text-secondary text-2xl font-medium leading-relaxed max-w-2xl">
-              Have a visionary project in mind? We're here to turn your tech pulse into reality.
+              {contact.subtitle}
             </p>
           </div>
 
@@ -61,7 +68,7 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div className="bg-white dark:bg-dark/50 p-10 md:p-20 rounded-[4rem] border border-border shadow-2xl relative overflow-hidden">
                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-               
+
               {isSent ? (
                 <div className="text-center py-20 animate-in fade-in zoom-in relative z-10">
                   <div className="inline-flex items-center justify-center p-6 bg-primary/10 text-primary rounded-full mb-8">
@@ -71,7 +78,7 @@ export default function ContactPage() {
                   <p className="text-secondary text-xl mb-12">
                     We'll pulse back to you within 24 hours.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setIsSent(false)}
                     className="bg-dark dark:bg-white text-white dark:text-dark px-10 py-5 rounded-2xl font-bold shadow-lg hover:scale-[1.05] transition-all"
                   >
@@ -159,9 +166,9 @@ export default function ContactPage() {
                     <Mail size={32} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-extrabold mb-2 tracking-tight">Direct Channel</h3>
-                    <p className="text-secondary font-bold mb-3">Reach out via secure mail.</p>
-                    <a href="mailto:hello@mindrovia.com" className="text-2xl font-black text-primary hover:underline">hello@mindrovia.com</a>
+                    <h3 className="text-2xl font-extrabold mb-2 tracking-tight">{contact.emailLabel}</h3>
+                    <p className="text-secondary font-bold mb-3">{contact.emailDescription}</p>
+                    <a href={`mailto:${contact.email}`} className="text-2xl font-black text-primary hover:underline break-all">{contact.email}</a>
                   </div>
                 </div>
 
@@ -170,9 +177,9 @@ export default function ContactPage() {
                     <MapPin size={32} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-extrabold mb-2 tracking-tight">Global HQ</h3>
-                    <p className="text-secondary font-bold mb-3">Visit our innovation hub.</p>
-                    <p className="text-2xl font-black">San Francisco, CA 94107</p>
+                    <h3 className="text-2xl font-extrabold mb-2 tracking-tight">{contact.addressLabel}</h3>
+                    <p className="text-secondary font-bold mb-3">{contact.addressDescription}</p>
+                    <p className="text-2xl font-black">{contact.address}</p>
                   </div>
                 </div>
 
@@ -181,18 +188,24 @@ export default function ContactPage() {
                     <Phone size={32} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-extrabold mb-2 tracking-tight">Vocal Pulse</h3>
-                    <p className="text-secondary font-bold mb-3">Available for urgent signals.</p>
-                    <a href="tel:+1555000000" className="text-2xl font-black text-primary hover:underline">+1 (555) 000-0000</a>
+                    <h3 className="text-2xl font-extrabold mb-2 tracking-tight">{contact.phoneLabel}</h3>
+                    <p className="text-secondary font-bold mb-3">{contact.phoneDescription}</p>
+                    <a href={telHref} className="text-2xl font-black text-primary hover:underline">{contact.phone}</a>
                   </div>
                 </div>
               </div>
 
               <div className="mt-24 pt-12 border-t border-border">
-                <h4 className="text-sm font-black uppercase tracking-[0.3em] mb-10 text-secondary">Signal Channels</h4>
+                <h4 className="text-sm font-black uppercase tracking-[0.3em] mb-10 text-secondary">{contact.socialsTitle}</h4>
                 <div className="flex gap-4">
-                  {[Twitter, Github, Linkedin].map((Icon, i) => (
-                    <a key={i} href="#" className="p-6 bg-white dark:bg-dark/50 border border-border rounded-[2rem] hover:bg-primary hover:text-white transition-all group shadow-md hover:shadow-primary/20 hover:scale-110">
+                  {socials.map(({ Icon, url }, i) => (
+                    <a
+                      key={i}
+                      href={url || "#"}
+                      target={url && url !== "#" ? "_blank" : undefined}
+                      rel={url && url !== "#" ? "noopener noreferrer" : undefined}
+                      className="p-6 bg-white dark:bg-dark/50 border border-border rounded-[2rem] hover:bg-primary hover:text-white transition-all group shadow-md hover:shadow-primary/20 hover:scale-110"
+                    >
                       <Icon size={28} />
                     </a>
                   ))}
@@ -205,11 +218,11 @@ export default function ContactPage() {
         {/* Dynamic Map Component */}
         <section className="px-6 mb-32">
           <div className="max-w-7xl mx-auto h-[600px] rounded-[4rem] overflow-hidden grayscale brightness-75 relative group shadow-2xl border-4 border-white dark:border-gray-800">
-             <Image 
-              src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2000&auto=format&fit=crop" 
-              alt="Globe Map" 
-              fill 
-              className="object-cover transition-transform duration-[2s] group-hover:scale-110"
+             {/* eslint-disable-next-line @next/next/no-img-element */}
+             <img
+              src={contact.mapImage}
+              alt="Globe Map"
+              className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
              />
              <div className="absolute inset-0 bg-primary/20 mix-blend-overlay" />
              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -218,8 +231,8 @@ export default function ContactPage() {
                     <MapPin size={40} />
                   </div>
                   <div>
-                    <span className="font-black text-2xl block tracking-tighter">{settings?.appName ? `${settings.appName.toUpperCase()} STUDIO` : "MIND ROVIA STUDIO"}</span>
-                    <span className="text-primary font-bold text-sm tracking-widest uppercase">Signal Center</span>
+                    <span className="font-black text-2xl block tracking-tighter">{contact.studioName}</span>
+                    <span className="text-primary font-bold text-sm tracking-widest uppercase">{contact.studioTagline}</span>
                   </div>
                 </div>
                 {/* Radial Glow */}

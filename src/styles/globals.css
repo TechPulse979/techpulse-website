@@ -56,6 +56,30 @@ body {
 }
 
 /* Blog Content Rich-Text styling (handles rendering of Quill editor HTML dynamically) */
+
+/* Keep all content within the reading column — long words/URLs wrap, and wide
+   media/code/tables scroll internally instead of stretching the page. */
+.blog-content {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.blog-content img,
+.blog-content video,
+.blog-content iframe {
+  max-width: 100% !important;
+  height: auto;
+}
+.blog-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+.blog-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .blog-content h1 {
   font-size: 2.25rem !important;
   font-weight: 800 !important;

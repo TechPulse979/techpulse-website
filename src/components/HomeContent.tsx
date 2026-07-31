@@ -11,6 +11,7 @@ import { Layers, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import Hero from "@/components/Hero";
+import HomeCustomCode from "@/components/HomeCustomCode";
 
 export default function HomeContent() {
   const [activeCategory, setActiveCategory] = useState("All");
@@ -107,6 +108,8 @@ export default function HomeContent() {
             </div>
           )}
         </section>
+
+        {settings?.homeCustomCode && <HomeCustomCode code={settings.homeCustomCode} />}
           </>
         )}
       </main>

@@ -5,7 +5,10 @@ const SettingSchema = new Schema({
   appLogoText: { type: String, default: "MR" },
   metaTitle: { type: String, default: "Mind Rovia Blog – Expert Articles, Guides & Latest Insights" },
   metaDescription: { type: String, default: "Explore informative blogs on technology, business, health, lifestyle, finance, travel, education, and much more at Mind Rovia." },
-  
+
+  // Custom code injected into the Home Page (raw HTML / JS / CSS or tracking scripts)
+  homeCustomCode: { type: String, default: "" },
+
   // Hero section
   heroTopText: { type: String, default: "Knowledge for the Curious Mind" },
   heroTitlePrefix: { type: String, default: "Discover Knowledge" },

@@ -17,6 +17,8 @@ export interface Post {
   date: string;
   readTime: string;
   featured?: boolean;
+  views?: number;
+  likes?: number;
   // Present on documents returned from MongoDB
   _id?: string;
   createdAt?: string;

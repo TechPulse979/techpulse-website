@@ -15,16 +15,17 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 export default function ManageBlogsPage() {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch("/api/posts");
+        // ?all=true returns hidden/draft posts too so admins can manage every post.
+        const res = await fetch("/api/posts?all=true");
         const data = await res.json();
-        setPosts(data);
+        if (Array.isArray(data)) setPosts(data);
       } catch (err) {
         console.error("Failed to fetch posts", err);
       } finally {
@@ -33,6 +34,26 @@ export default function ManageBlogsPage() {
     };
     fetchPosts();
   }, []);
+
+  // Toggle a post between Live (published) and Hidden. Optimistic update: flip the
+  // UI immediately, then reconcile with the API — reverting only if it fails.
+  const handleToggleStatus = async (id: string, current: boolean) => {
+    const next = !current;
+    setPosts((prev) => prev.map((p: any) => (p._id === id ? { ...p, published: next } : p)));
+
+    try {
+      const res = await fetch(`/api/posts/${id}/publish`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ published: next }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+    } catch (err) {
+      console.error("Failed to toggle publish status", err);
+      // Revert on failure so the UI reflects the real database state.
+      setPosts((prev) => prev.map((p: any) => (p._id === id ? { ...p, published: current } : p)));
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this post?")) return;
@@ -84,6 +105,7 @@ export default function ManageBlogsPage() {
               <tr className="border-b border-border bg-light dark:bg-white/5">
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-secondary">Post Title</th>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-secondary">Category</th>
+                <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-secondary">Status</th>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-secondary">Date</th>
                 <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-secondary text-right">Actions</th>
               </tr>
@@ -104,6 +126,33 @@ export default function ManageBlogsPage() {
                     <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg">
                       {post.category}
                     </span>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={post.published !== false}
+                        onClick={() => handleToggleStatus(post._id, post.published !== false)}
+                        title={post.published !== false ? "Click to hide from public" : "Click to make live"}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+                          post.published !== false ? "bg-green-500" : "bg-secondary/30"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                            post.published !== false ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                      <span
+                        className={`text-[10px] font-black uppercase tracking-widest ${
+                          post.published !== false ? "text-green-500" : "text-secondary"
+                        }`}
+                      >
+                        {post.published !== false ? "Live" : "Hidden"}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-8 py-6 text-secondary text-xs font-bold uppercase tracking-widest">
                     {new Date(post.createdAt).toLocaleDateString()}

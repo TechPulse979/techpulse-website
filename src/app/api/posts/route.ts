@@ -4,9 +4,22 @@ import Post from '@/models/Post';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await connectDB();
+
+    // Admins can request every post (including hidden/draft) with ?all=true.
+    // Public callers always get only published posts.
+    const { searchParams } = new URL(request.url);
+    if (searchParams.get('all') === 'true') {
+      const session = await getServerSession(authOptions);
+      if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      const posts = await Post.find().sort({ createdAt: -1 });
+      return NextResponse.json(posts);
+    }
+
     const posts = await Post.find({ published: true }).sort({ createdAt: -1 });
     return NextResponse.json(posts);
   } catch (error) {

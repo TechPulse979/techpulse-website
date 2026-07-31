@@ -9,6 +9,8 @@ import Setting from "@/models/Setting";
 import { notFound } from "next/navigation";
 import { getReadingTime } from "@/lib/readingTime";
 import type { Metadata } from "next";
+import InteractiveDetails from "@/components/InteractiveDetails";
+import BlogCard from "@/components/BlogCard";
 
 // ─── Data fetcher ──────────────────────────────────────────────────────────
 
@@ -166,11 +168,35 @@ function buildBreadcrumbSchema(post: any, seo: any) {
 
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const post: any = await getPost(resolvedParams.slug);
+  const rawPost: any = await getPost(resolvedParams.slug);
 
-  if (!post) {
+  if (!rawPost) {
     notFound();
   }
+
+  const post = {
+    ...rawPost,
+    _id: rawPost._id.toString(),
+    createdAt: rawPost.createdAt ? rawPost.createdAt.toISOString() : null,
+    updatedAt: rawPost.updatedAt ? rawPost.updatedAt.toISOString() : null,
+  };
+
+  // Fetch related posts (same category, excluding current, limit 3)
+  const rawRelatedPosts = await Post.find({
+    category: post.category,
+    _id: { $ne: rawPost._id },
+    published: true
+  })
+  .sort({ createdAt: -1 })
+  .limit(3)
+  .lean();
+
+  const relatedPosts = rawRelatedPosts.map((p: any) => ({
+    ...p,
+    _id: p._id.toString(),
+    createdAt: p.createdAt ? p.createdAt.toISOString() : null,
+    updatedAt: p.updatedAt ? p.updatedAt.toISOString() : null,
+  }));
 
   const seo = post.seo || {};
   const settings = await Setting.findOne().lean();
@@ -318,10 +344,39 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           <div
-            className="blog-content max-w-none"
+            className="blog-content max-w-none mb-12"
             dangerouslySetInnerHTML={{ __html: cleanContent }}
           />
+
+          {/* Interactive features (views, likes progress bar, comments list/form) */}
+          <InteractiveDetails
+            postId={post._id}
+            postSlug={post.slug}
+            initialLikes={post.likes || 0}
+            initialViews={post.views || 0}
+          />
         </article>
+
+        {/* Related Posts section */}
+        {relatedPosts.length > 0 && (
+          <section className="bg-light dark:bg-dark/30 border-t border-border mt-20 py-20 px-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-12">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-3xl font-black tracking-tight">Related Insights</h3>
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest">
+                    {post.category}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {relatedPosts.map((item: any) => (
+                  <BlogCard key={item._id} post={item} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
     </>

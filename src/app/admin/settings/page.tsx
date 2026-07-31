@@ -15,7 +15,8 @@ import {
   Pencil,
   Trash2,
   Check,
-  X
+  X,
+  Code
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -48,9 +49,10 @@ export default function AdminSettings() {
     githubUrl: "#",
     linkedinUrl: "#",
     categories: ["AI", "Programming", "Tutorials", "Cloud", "DevOps"],
+    homeCustomCode: "",
   });
 
-  const [activeTab, setActiveTab] = useState<"general" | "hero" | "stats" | "footer">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "hero" | "stats" | "footer" | "homecode">("general");
   const [newCatName, setNewCatName] = useState("");
 
   // Category editor working model. Each item keeps `original` (its name as loaded
@@ -234,6 +236,7 @@ export default function AdminSettings() {
               { id: "hero", label: "Hero Section", icon: <Layout size={18} /> },
               { id: "stats", label: "Stats & Socials", icon: <BarChart size={18} /> },
               { id: "footer", label: "Footer & Form", icon: <Mail size={18} /> },
+              { id: "homecode", label: "Home Code", icon: <Code size={18} /> },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -637,6 +640,49 @@ export default function AdminSettings() {
                     className={textareaClass}
                     required
                   />
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "homecode" && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                  <Code size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium leading-relaxed">
+                    This code is injected directly into the <span className="font-black">Home Page</span> and runs in
+                    visitors&apos; browsers. Use it for analytics/tracking scripts, verification tags, or custom HTML &amp;
+                    CSS. Only paste code you trust &mdash; invalid or malicious code can break the page.
+                  </p>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Home Page Custom Code (HTML / JS / CSS)</label>
+                  <textarea
+                    name="homeCustomCode"
+                    value={settings.homeCustomCode}
+                    onChange={handleChange}
+                    placeholder={"<!-- e.g. Google Analytics, meta verification, or custom banner -->\n<script>\n  // your tracking code here\n</script>"}
+                    spellCheck={false}
+                    className="w-full px-5 py-4 bg-[#0b1120] text-slate-100 border border-border rounded-xl focus:outline-none focus:border-primary font-mono text-xs leading-relaxed transition-all resize-y min-h-[320px]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-secondary text-[11px] font-medium leading-relaxed">
+                    Leave empty to inject nothing. Saved code takes effect on the homepage after you press
+                    <span className="font-black"> Save Settings</span>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSettings((prev: any) => ({ ...prev, homeCustomCode: "" }))}
+                    className="flex-shrink-0 px-5 py-2.5 bg-light dark:bg-dark border border-border rounded-xl font-black uppercase tracking-widest text-[10px] text-secondary hover:text-red-500 hover:border-red-500/30 transition-all cursor-pointer"
+                  >
+                    Clear Code
+                  </button>
                 </div>
               </motion.div>
             )}

@@ -37,7 +37,8 @@ function WriteBlogContent() {
     excerpt: '',
     content: '',
     image: '',
-    category: 'Programming'
+    category: 'Programming',
+    published: true
   });
 
   const [seoData, setSeoData] = useState<SeoData>(defaultSeoData);
@@ -84,7 +85,8 @@ function WriteBlogContent() {
           excerpt: data.excerpt || '',
           content: data.content || '',
           image: data.image || '',
-          category: data.category || 'Programming'
+          category: data.category || 'Programming',
+          published: data.published !== false
         });
         setSeoData({
           ...defaultSeoData,
@@ -234,7 +236,8 @@ function WriteBlogContent() {
             excerpt: '',
             content: '',
             image: '',
-            category: 'Programming'
+            category: 'Programming',
+            published: true
           });
           setSeoData(defaultSeoData);
         } else {
@@ -470,6 +473,35 @@ function WriteBlogContent() {
                </motion.div>
              )}
              <div className="flex-1" />
+
+             {/* Live / Draft (ON/OFF) publish toggle */}
+             <div className="flex items-center gap-3 px-5 py-3 bg-light dark:bg-dark border border-border rounded-2xl">
+               <button
+                 type="button"
+                 role="switch"
+                 aria-checked={formData.published}
+                 onClick={() => setFormData(prev => ({ ...prev, published: !prev.published }))}
+                 title={formData.published ? "Post is Live — click to save as Draft" : "Post is a Draft — click to make it Live"}
+                 className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+                   formData.published ? "bg-green-500" : "bg-secondary/30"
+                 }`}
+               >
+                 <span
+                   className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                     formData.published ? "translate-x-6" : "translate-x-1"
+                   }`}
+                 />
+               </button>
+               <div className="leading-tight">
+                 <p className={`font-black uppercase tracking-widest text-xs ${formData.published ? "text-green-500" : "text-secondary"}`}>
+                   {formData.published ? "Live" : "Draft"}
+                 </p>
+                 <p className="text-secondary text-[9px] font-bold uppercase tracking-widest">
+                   {formData.published ? "Visible to everyone" : "Hidden from public"}
+                 </p>
+               </div>
+             </div>
+
              <button
               disabled={loading || uploading}
               type="submit"

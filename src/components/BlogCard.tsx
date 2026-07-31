@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Eye, Heart } from "lucide-react";
 import type { Post } from "@/data/blog";
 import { getReadingTime } from "@/lib/readingTime";
 
@@ -31,14 +31,26 @@ export default function BlogCard({ post }: { post: Post }) {
       </Link>
 
       <div className="px-4 flex-1 flex flex-col">
-        <div className="flex items-center space-x-2 mb-4">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-            {readTime}
-          </span>
-          <span className="text-[10px] text-gray-300">•</span>
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-            {displayDate}
-          </span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+              {readTime}
+            </span>
+            <span className="text-[10px] text-gray-300">•</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+              {displayDate}
+            </span>
+          </div>
+          <div className="flex items-center space-x-3 text-[10px] font-bold text-gray-400">
+            <span className="flex items-center gap-1">
+              <Eye size={12} className="text-gray-400" />
+              {post.views || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <Heart size={12} className="text-red-500 fill-red-500/20" />
+              {post.likes || 0}
+            </span>
+          </div>
         </div>
 
         <Link href={`/blog/${post.slug}`}>

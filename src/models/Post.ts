@@ -14,6 +14,8 @@ const PostSchema = new Schema({
   },
   featured: { type: Boolean, default: false },
   published: { type: Boolean, default: true },
+  views: { type: Number, default: 0 },
+  likes: { type: Number, default: 0 },
 
   // SEO Management Fields
   seo: {
